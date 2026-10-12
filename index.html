@@ -4,24 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>Hollow Knight</title>
-<style>
-html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden}
-#unity-canvas{width:100vw !important;height:100vh !important;position:fixed;inset:0;display:block;background:#000}
-</style>
+<style>html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;color:#fff;font-family:monospace} #unity-canvas{width:100vw!important;height:100vh!important;position:fixed;inset:0;display:block} #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:10}</style>
 </head>
 <body>
+<div id="loading"><div id="status">Loading... 0%</div></div>
 <canvas id="unity-canvas" tabindex="-1"></canvas>
 <script src="Build/hktruffled.loader.js"></script>
 <script>
-createUnityInstance(document.querySelector("#unity-canvas"), {
-  dataUrl: "Build/hktruffled.data",
-  frameworkUrl: "Build/hktruffled.framework.js",
-  codeUrl: "Build/hktruffled.wasm",
-  streamingAssetsUrl: "StreamingAssets",
-  companyName: "Team Cherry",
-  productName: "Hollow Knight",
-  productVersion: "1.5"
-});
+async function fetchParts(base, count, label) {
+  const chunks = [];
+  let total = 0;
+  for (let i = 1; i <= count; i++) {
+    document.getElementById("status").innerText = `Loading ${label} ${i}/${count}...`;
+    const res = await fetch(`${base}.part${i}`);
+    if (!res.ok) throw new Error(`Failed to fetch ${base}.part${i}: ${res.status}`);
+    const buf = await res.arrayBuffer();
+    chunks.push(new Uint8Array(buf));
+    total += buf.byteLength;
+  }
+  const combined = new Uint8Array(total);
+  let offset = 0;
+  for (const c of chunks) { combined.set(c, offset); offset += c.length; }
+  return combined;
+}
+
+(async () => {
+  try {
+    // You have 45 data parts + 2 wasm parts from your screenshot
+    const dataBin = await fetchParts("Build/hktruffled.data", 45, "data");
+    const wasmBin = await fetchParts("Build/hktruffled.wasm", 2, "wasm");
+
+    const dataUrl = URL.createObjectURL(new Blob([dataBin]));
+    const wasmUrl = URL.createObjectURL(new Blob([wasmBin]));
+
+    document.getElementById("status").innerText = "Starting game...";
+
+    createUnityInstance(document.querySelector("#unity-canvas"), {
+      dataUrl: dataUrl,
+      frameworkUrl: "Build/hktruffled.framework.js",
+      codeUrl: wasmUrl,
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "Team Cherry",
+      productName: "Hollow Knight",
+      productVersion: "1.5"
+    }).then(() => {
+      document.getElementById("loading").style.display = "none";
+    });
+
+  } catch (e) {
+    document.getElementById("status").innerText = "ERROR: " + e.message + "\nCheck Build folder names";
+    console.error(e);
+  }
+})();
 </script>
 </body>
 </html>
