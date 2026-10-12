@@ -3,20 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<style>html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden} #unity-canvas{width:100vw !important;height:100vh !important;position:fixed;inset:0;display:block}</style>
+<title>Hollow Knight</title>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden}
+#unity-canvas{width:100vw !important;height:100vh !important;position:fixed;inset:0;display:block;background:#000}
+</style>
 </head>
 <body>
 <canvas id="unity-canvas" tabindex="-1"></canvas>
 <script src="Build/hktruffled.loader.js"></script>
 <script>
-createUnityInstance(document.getElementById("unity-canvas"),{
-  dataUrl:"Build/hktruffled.data",
-  frameworkUrl:"Build/hktruffled.framework.js",
-  codeUrl:"Build/hktruffled.wasm",
-  streamingAssetsUrl:"StreamingAssets",
-  companyName:"TeamCherry",
-  productName:"Hollow Knight",
-  productVersion:"1.5"
+createUnityInstance(document.querySelector("#unity-canvas"), {
+  dataUrl: "Build/hktruffled.data",
+  frameworkUrl: "Build/hktruffled.framework.js",
+  codeUrl: "Build/hktruffled.wasm",
+  streamingAssetsUrl: "StreamingAssets",
+  companyName: "Team Cherry",
+  productName: "Hollow Knight",
+  productVersion: "1.5"
 });
 </script>
 </body>
